@@ -1,19 +1,21 @@
+// struct node
+	.struct		0
+ListNode:
+	value:		.hword	0
+	link:		.quad	0
+	.equ		NodeSize, .-ListNode
+
+// data
 	.data
-	.type	v, %object
-	.size	v, 3
+	Head:		.quad	0
+	Nodes:		.skip	100 * NodeSize
+	FreePtr:	.quad	Nodes
 
-v:
-	.xword	1, 2, 3
-
+// code
 	.text
 	.global main
 	.arch armv8-a+fp+simd
 	.type main, %function
 
 main:
-	ADR		X9, v
-	LDUR	X10, [X9, #0]
-	LDUR	X11, [X9, #8]
-	ADD		X10, X10, X11
-	LDUR	X11, [X9, #16]
-	ADD		X10, X10, X11
+	ADR		X9, FreePtr
