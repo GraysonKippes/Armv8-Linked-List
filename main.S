@@ -35,7 +35,7 @@ main:
 
 // Inserts a value into the list, according to an ascending sort.
 // Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
-// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag.
+// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag, X26 to store the return address.
 // Returns: a 64-bit address of the newly created node, passed in X0.
 insert:
 	// Save the data value parameter.
@@ -92,12 +92,10 @@ remove:
 // Uses: X9 for loading FreePtr into, and X10 for loading the address of FreePtr into.
 // Returns: the address to the new node, passed in X0.
 alloc:
-	// Load FreePtr into X9.
-	LDR		X9, FreePtr
-	// Pass FreePtr into X0, before it gets incremented. After allocation, this address will point to the new node.
-	MOV		X0, X9
-	// Increment the FreePtr by NodeSize.
-	ADD		X9, X9, NodeSize
+	// Load FreePtr into X0.
+	LDR		X0, FreePtr
+	// Set X9 = FreePtr + NodeSize.
+	ADD		X9, X0, NodeSize
 	// Get the address of FreePtr and use it to store the incremented address into it.
 	ADR		X10, FreePtr
 	STR		X9, [X10]
