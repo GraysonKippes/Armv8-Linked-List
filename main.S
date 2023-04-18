@@ -27,10 +27,15 @@ main:
 	BL		insert
 	MOV		X0, #7
 	BL		insert
+	MOV		X0, #6
+	BL		insert
 	// Unit test
 	LDR		X9, Head
-	LDR		X9, [X9, link]
 	LDRH	W10, [X9, value]
+	LDR		X9, [X9, link]
+	LDRH	W11, [X9, value]
+	LDR		X9, [X9, link]
+	LDRH	W12, [X9, value]
 	BL		main		// End here.
 
 // Inserts a value into the list, according to an ascending sort.
@@ -44,16 +49,21 @@ insert:
 	// X21 holds the previous node.
 	LDR		X20, Head
 
-	// X22 is set to 1 if the new node will be the first node in the list.
+	// Insert-at-start flag: X22 is set to 1 if the new node will be the first node in the list.
 	MOV		X22, #1
 
 	// Traversal Loop
 	insert_loop:
-	// Case 1: if the pointer to the current node is 0, that means the end of the list has been reached. Insert the node now.
+	// Special case: if the pointer to the current node is 0, that means the end of the list has been reached. Insert the node now.
 	CBZ		X20, insert_end
 
-	// TODO: implement dynamic sorting in insert.
+	// Compare the value to be inserted with the value in the current node.
+	LDR		X23, [X20, value]
+	CMP		X19, X23
+	// If the inserted value <= current value, stop and insert the new node here.
+	BLE		insert_end
 
+	insert_incr:
 	// Go to the next node and begin the next iteration.
 	MOV		X21, X20
 	LDR		X20, [X20, link]
@@ -67,7 +77,8 @@ insert:
 	BL		alloc
 	// Set the value of the new node.
 	STR		W19, [X0, value]
-	// If the list-empty flag (X22) is 1 at the end of the traversal, set Head to the new node.
+	STR		X20, [X0, link]	// Link the new node to the current node, even if it is null.
+	// If the insert-at-start flag (X22) is 1 at the end of the traversal, set Head to the new node.
 	// Otherwise, link the previous node (which may be Head) to the new node.
 	CBNZ	X22, insert_head
 	// Link the previous node to the new node.
