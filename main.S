@@ -25,7 +25,8 @@ ListNode:
 main:
 	MOV		X0, #5
 	BL		insert
-	LDR		X9, [X0, value]
+	LDR		X21, Head
+	LDR		X9, [X21, value]
 	BL		main		// End here.
 
 // Inserts a value into the list, according to an ascending sort.
@@ -34,24 +35,42 @@ main:
 insert:
 	// Save the data value parameter.
 	MOV		W19, W0
-	// X9 holds the current node to check.
+	// X20 holds the current node to check.
+	// X21 holds the previous node.
 	LDR		X20, Head
+
+	// X22 is set to 1 if the new node will be the first node in the list.
+	MOV		X22, #1
+
+	// Traversal Loop
 	insert_loop:
 	// Case 1: if the pointer to the current node is 0, that means the end of the list has been reached. Insert the node now.
 	CBZ		X20, insert_end
 
-	// Go here if inserting in the middle of the list.
-	insert_middle:
-	RET
+	// Go to the next node and begin the next iteration.
+	MOV		X21, X20
+	LDR		X20, [X20, link]
+	B		insert_loop
 
-	// Go here if inserting at the end of the list.
+	// Do the insertion here.
 	insert_end:
 	// Allocate space for a new node.
-	MOV		X21, X30
+	MOV		X26, X30
 	BL		alloc
 	// Set the value of the new node.
 	STR		W19, [X0, value]
-	RET		X21
+	// If X22 is 1 at the end of the traversal, set Head to the new node.
+	// Otherwise, link the previous node (which may be Head) to the new node.
+	CBNZ	X22, insert_head
+	// Link the previous node to the new node.
+	STR		X0, [X21, link]
+	B		insert_return
+	insert_head:
+	// Set the head to the new node.
+	ADR		X21, Head
+	STR		X0, [X21]
+	insert_return:
+	RET		X26
 
 // Removes the first instance of a value in the list.
 // Input: a 16-bit data value (hword) passed in X0, to be removed from the list.
