@@ -30,8 +30,10 @@ main:
 // Input: a 16-bit data value (hword) passed in X0, to be inserted into the list.
 // Returns: a 64-bit address of the newly created node, passed in X0.
 insert:
+	// Save the data value parameter.
+	MOV		W19, W0
 	// X9 holds the current node to check.
-	MOV		X9, Head
+	LDR		X9, Head
 	insert_loop:
 	// Case 1: if the pointer to the current node is 0, that means the end of the list has been reached. Insert the node now.
 	CBZ		X9, insert_end
@@ -42,13 +44,14 @@ insert:
 
 	// Go here if inserting at the end of the list.
 	insert_end:
-	// Create a new node.
-	MOV		X10, FreePtr	// Get the address of the next available node.
-	STRH	W0, [X10]		// Set the value field.
-	// Return the pointer to the newly created node.
-	MOV		X0, FreePtr
-	// Allocate memory for another node (10 bytes) on the node buffer.
-	//ADD			FreePtr, FreePtr, #10
+	// Allocate space for a new node.
+	LDR		X10, FreePtr
+	MOV		X0, X10		// Pass the previous FreePtr, which now points to the new node.
+	ADD		X10, X10, NodeSize
+	ADR		X11, FreePtr	// Get the address of FreePtr and use it to store the incremented address into it.
+	STR		X10, [X11]
+	// Set the value of the new node.
+	STR		W19, [X0, value]
 	RET
 
 // Removes the first instance of a value in the list.
