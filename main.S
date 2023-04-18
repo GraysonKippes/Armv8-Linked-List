@@ -25,12 +25,17 @@ ListNode:
 main:
 	MOV		X0, #5
 	BL		insert
-	LDR		X21, Head
-	LDR		X9, [X21, value]
+	MOV		X0, #7
+	BL		insert
+	// Unit test
+	LDR		X9, Head
+	LDR		X9, [X9, link]
+	LDRH	W10, [X9, value]
 	BL		main		// End here.
 
 // Inserts a value into the list, according to an ascending sort.
-// Input: a 16-bit data value (hword) passed in X0, to be inserted into the list.
+// Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
+// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag.
 // Returns: a 64-bit address of the newly created node, passed in X0.
 insert:
 	// Save the data value parameter.
@@ -47,9 +52,12 @@ insert:
 	// Case 1: if the pointer to the current node is 0, that means the end of the list has been reached. Insert the node now.
 	CBZ		X20, insert_end
 
+	// TODO: implement dynamic sorting in insert.
+
 	// Go to the next node and begin the next iteration.
 	MOV		X21, X20
 	LDR		X20, [X20, link]
+	MOV		X22, #0	// Zero-out the list-empty flag.
 	B		insert_loop
 
 	// Do the insertion here.
@@ -59,7 +67,7 @@ insert:
 	BL		alloc
 	// Set the value of the new node.
 	STR		W19, [X0, value]
-	// If X22 is 1 at the end of the traversal, set Head to the new node.
+	// If the list-empty flag (X22) is 1 at the end of the traversal, set Head to the new node.
 	// Otherwise, link the previous node (which may be Head) to the new node.
 	CBNZ	X22, insert_head
 	// Link the previous node to the new node.
@@ -73,12 +81,14 @@ insert:
 	RET		X26
 
 // Removes the first instance of a value in the list.
-// Input: a 16-bit data value (hword) passed in X0, to be removed from the list.
+// Inputs: a 16-bit data value (hword) passed in X0, to be removed from the list.
 // Returns: 1 if the value was found, 0 otherwise, passed in X0.
 remove:
+	// TODO: implement this function.
+	RET
 
 // Allocates a new node on the node buffer.
-// Input: nothing.
+// Inputs: nothing.
 // Uses: X9 for loading FreePtr into, and X10 for loading the address of FreePtr into.
 // Returns: the address to the new node, passed in X0.
 alloc:
