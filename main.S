@@ -20,6 +20,7 @@ ListNode:
 	.type		insert, %function
 	.type		remove,	%function
 	.type		alloc, %function
+	.type		free, %function
 
 // Entrypoint.
 main:
@@ -29,6 +30,12 @@ main:
 	BL		insert
 	MOV		X0, #6
 	BL		insert
+	MOV		X0, #6
+	BL		insert
+	MOV		X0, #3
+	BL		insert
+	MOV		X0, #5
+	BL		remove
 	// Unit test
 	LDR		X9, Head
 	LDRH	W10, [X9, value]
@@ -95,8 +102,49 @@ insert:
 // Inputs: a 16-bit data value (hword) passed in X0, to be removed from the list.
 // Returns: 1 if the value was found, 0 otherwise, passed in X0.
 remove:
-	// TODO: implement this function.
+	// Store the current node pointer in X19, beginning with Head.
+	// Store the previous node pointer in X20.
+	LDR		X19, Head
+
+	// Reset-Head flag (X21): starts at 1; if it is not 0 at the end of the loop, the Head node is being deleted and the Head pointer must be updated.
+	MOV		X21, #1
+
+	// Traversal Loop
+	remove_loop:
+	// 1. check if the end of the list has been reached (current node == null); if it has, move 0 into X0 and return.
+	// 2. if not, get the value of the current node (store in W22).
+	// 3. compare the delend with the value in W22; if they are equal, delete the node.
+	// 4. if they are not equal, increment the current node and begin the next iteration.
+	CBNZ	X19, remove_cmp		// If current node pointer is null, end the function now.
+	MOV		X0, XZR				// Set return value (X0) to 0.
 	RET
+
+	// Load the current node value and compare it to the delend.
+	remove_cmp:
+	LDRH	W22, [X19, value]
+	CMP		W0, W22
+	BEQ		remove_del
+
+	// Increment current node pointer and begin next iteration here.
+	remove_incr:
+	MOV		X20, X19			// Set the previous node pointer to the current node pointer.
+	LDR		X19, [X19, link]	// Increment the current node pointer.
+	MOV		X21, XZR			// Clear the Reset-Head flag.
+	B		remove_loop			// Begin the next iteration.
+
+	// Delete node here.
+	remove_del:
+	// 1. load the link field of the current node into X23. It will go into the link field of the previous node.
+	// 2. F
+	// 3. Set X0 to 1.
+	// 4. Return.
+	// Load the link field of the current node into X23. It will go into the link field of the previous node.
+	LDR		X23, [X19, link]
+	STR		X23, [X20, link]
+	MOV		X26, X30
+	BL		free
+	MOV		X0, #1
+	RET		X26
 
 // Allocates a new node on the node buffer.
 // Inputs: nothing.
@@ -108,6 +156,19 @@ alloc:
 	// Set X9 = FreePtr + NodeSize.
 	ADD		X9, X0, NodeSize
 	// Get the address of FreePtr and use it to store the incremented address into it.
+	ADR		X10, FreePtr
+	STR		X9, [X10]
+	RET
+
+// Deallocates the top node on the node buffer.
+// Inputs: nothing.
+// Uses: X9 for loading FreePtr into, and X10 for loading the address of FreePtr into.
+// Returns: nothing.
+free:
+	// Free one node on the buffer by decrementing the FreePtr by NodeSize.
+	LDR		X9, FreePtr
+	SUB		X9, X9, NodeSize
+	// Get the address of FreePtr and use it to store the decremented address into it.
 	ADR		X10, FreePtr
 	STR		X9, [X10]
 	RET
