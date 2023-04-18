@@ -40,7 +40,7 @@ main:
 
 // Inserts a value into the list, according to an ascending sort.
 // Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
-// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag, X26 to store the return address.
+// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag, W23 to hold the value of the current node, X26 to store the return address.
 // Returns: a 64-bit address of the newly created node, passed in X0.
 insert:
 	// Save the data value parameter.
@@ -58,8 +58,8 @@ insert:
 	CBZ		X20, insert_end
 
 	// Compare the value to be inserted with the value in the current node.
-	LDR		X23, [X20, value]
-	CMP		X19, X23
+	LDRH	W23, [X20, value]
+	CMP		W19, W23
 	// If the inserted value <= current value, stop and insert the new node here.
 	BLE		insert_end
 
@@ -76,7 +76,7 @@ insert:
 	MOV		X26, X30
 	BL		alloc
 	// Set the value of the new node.
-	STR		W19, [X0, value]
+	STRH	W19, [X0, value]
 	STR		X20, [X0, link]	// Link the new node to the current node, even if it is null.
 	// If the insert-at-start flag (X22) is 1 at the end of the traversal, set Head to the new node.
 	// Otherwise, link the previous node (which may be Head) to the new node.
