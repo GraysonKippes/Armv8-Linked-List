@@ -15,7 +15,7 @@ ListNode:
 
 	.text
 	.global 	main
-	.arch 		armv8-a+fp+simd
+	.arch 		armv8-a+simd
 	.type 		main, %function
 	.type		insert, %function
 	.type		remove,	%function
