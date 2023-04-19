@@ -47,15 +47,18 @@ main:
 
 // Inserts a value into the list, according to an ascending sort.
 // Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
-// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag, W23 to hold the value of the current node, X26 to store the return address.
+// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag, W23 to hold the value of the current node.
 // Returns: a 64-bit address of the newly created node, passed in X0.
 insert:
+	// Push LR onto the stack.
+	SUB		SP, SP, #16
+	STUR	X30, [SP]
+
 	// Save the data value parameter.
 	MOV		W19, W0
 	// X20 holds the current node to check.
 	// X21 holds the previous node.
 	LDR		X20, Head
-
 	// Insert-at-start flag: X22 is set to 1 if the new node will be the first node in the list.
 	MOV		X22, #1
 
@@ -79,10 +82,8 @@ insert:
 
 	// Do the insertion here.
 	insert_end:
-	// Allocate space for a new node.
-	MOV		X26, X30
-	BL		alloc
-	// Set the value of the new node.
+	// Create a new node and set its value and link.
+	BL 		alloc
 	STRH	W19, [X0, value]
 	STR		X20, [X0, link]	// Link the new node to the current node, even if it is null.
 	// If the insert-at-start flag (X22) is 1 at the end of the traversal, set Head to the new node.
@@ -96,7 +97,10 @@ insert:
 	ADR		X21, Head
 	STR		X0, [X21]
 	insert_return:
-	RET		X26
+	// Pop LR off the stack.
+	LDUR	X30, [SP]
+	ADD		SP, SP, #16
+	RET
 
 // Removes the first instance of a value in the list.
 // Inputs: a 16-bit data value (hword) passed in X0, to be removed from the list.
