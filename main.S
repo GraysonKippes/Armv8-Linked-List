@@ -106,10 +106,13 @@ insert:
 // Inputs: a 16-bit data value (hword) passed in X0, to be removed from the list.
 // Returns: 1 if the value was found, 0 otherwise, passed in X0.
 remove:
+	// Push LR onto the stack.
+	SUB		SP, SP, #16
+	STUR	X30, [SP]
+
 	// Store the current node pointer in X19, beginning with Head.
 	// Store the previous node pointer in X20.
 	LDR		X19, Head
-
 	// Reset-Head flag (X21): starts at 1; if it is not 0 at the end of the loop, the Head node is being deleted and the Head pointer must be updated.
 	MOV		X21, #1
 
@@ -145,15 +148,17 @@ remove:
 	STR		X23, [X20, link]
 	B		remove_end
 	remove_reset_head:
-	ADR		X21, Head
+	ADR		X21, Head	// Load the address of the head pointer in X21, it's not needed for the Reset-Head flag anymore.
 	STR		X23, [X21]
 	remove_end:
 	// Free a node on the node buffer.
-	MOV		X26, X30
 	BL		free
+	// Pop LR off the stack.
+	LDUR	X30, [SP]
+	ADD		SP, SP, #16
 	// Return 1.
 	MOV		X0, #1
-	RET		X26
+	RET
 
 // Allocates a new node on the node buffer.
 // Inputs: nothing.
