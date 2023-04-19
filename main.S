@@ -34,7 +34,7 @@ main:
 	BL		insert
 	MOV		X0, #3
 	BL		insert
-	MOV		X0, #5
+	MOV		X0, #3
 	BL		remove
 	// Unit test
 	LDR		X9, Head
@@ -134,15 +134,20 @@ remove:
 
 	// Delete node here.
 	remove_del:
-	// 1. load the link field of the current node into X23. It will go into the link field of the previous node.
-	// 2. F
-	// 3. Set X0 to 1.
-	// 4. Return.
 	// Load the link field of the current node into X23. It will go into the link field of the previous node.
 	LDR		X23, [X19, link]
+	// If the Reset-Head flag is 1, set Head pointer to X23. Otherwise, put X23 in the link field of the previous node.
+	CBNZ	X21, remove_reset_head
 	STR		X23, [X20, link]
+	B		remove_end
+	remove_reset_head:
+	ADR		X21, Head
+	STR		X23, [X21]
+	remove_end:
+	// Free a node on the node buffer.
 	MOV		X26, X30
 	BL		free
+	// Return 1.
 	MOV		X0, #1
 	RET		X26
 
