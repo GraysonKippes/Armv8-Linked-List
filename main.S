@@ -19,6 +19,7 @@ ListNode:
 	.type 		main, %function
 	.type		insert, %function
 	.type		remove,	%function
+	.type		search, %function
 	.type		alloc, %function
 	.type		free, %function
 
@@ -30,12 +31,12 @@ main:
 	BL		insert
 	MOV		X0, #6
 	BL		insert
-	MOV		X0, #6
-	BL		insert
 	MOV		X0, #3
 	BL		insert
 	MOV		X0, #3
 	BL		remove
+	MOV		X0, #7
+	BL		search
 	// Unit test
 	LDR		X9, Head
 	LDRH	W10, [X9, value]
@@ -169,6 +170,27 @@ remove:
 	ADD		SP, SP, #16
 	// Return 1.
 	MOV		X0, #1
+	RET
+
+// Searches for a value in the list, starting from the front.
+// Inputs: a 16-bit value to search for, passed in X0.
+// Returns: the 64-bit address to the node containing the value, or 0 if no match was found, passed in X0.
+// Regiser usage:
+//		X0 - holds the pointer to the current node; when this equals 0, or the value inside the node equals the search value, return.
+//		W19 - holds the value to search for.
+//		W20 - holds the value of the current node.
+search:
+	// Move the search value into W19, store the current node pointer in X0.
+	MOV		W19, W0
+	LDR		X0, Head
+	search_loop:
+	CBZ		X0, search_end
+	LDR		W20, [X0, value]
+	CMP		W19, W20
+	BEQ		search_end
+	LDR		X0, [X0, link]
+	B		search_loop
+	search_end:
 	RET
 
 // Allocates a new node on the node buffer.
