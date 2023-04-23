@@ -47,8 +47,13 @@ main:
 
 // Inserts a value into the list, according to an ascending sort.
 // Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
-// Uses: W19 to store the data value parameter, X20 to hold the current node, X21 to hold the previous node (or the address to the head node if the list is empty), X22 as a list-empty flag, W23 to hold the value of the current node.
 // Returns: a 64-bit address of the newly created node, passed in X0.
+// Register usage:
+//		W19 - stores the data value parameter.
+//		X20 - holds the current node in list traversal.
+//		X21 - holds the previous node in list traversal, or the address to the head node if inserting at the front of the list.
+//		X22 - reset-head flag, indicates whether the head pointer must be reset to the new node because it is being inserted at the front of the list.
+//		W23 - holds the value of the current node.
 insert:
 	// Push LR onto the stack.
 	SUB		SP, SP, #16
@@ -105,6 +110,12 @@ insert:
 // Removes the first instance of a value in the list.
 // Inputs: a 16-bit data value (hword) passed in X0, to be removed from the list.
 // Returns: 1 if the value was found, 0 otherwise, passed in X0.
+// Register usage:
+//		X19 - holds the current node in list traversal.
+//		X20 - holds the previous node in list traversal.
+//		X21 - reset-head flag, indicates whether the head pointer must be reset because the front node is being removed.
+//		W22 - holds the value of the current node.
+//		X23 - holds the link field of the node to be removed, which will be stored in the link field of the previous node.
 remove:
 	// Push LR onto the stack.
 	SUB		SP, SP, #16
@@ -162,8 +173,10 @@ remove:
 
 // Allocates a new node on the node buffer.
 // Inputs: nothing.
-// Uses: X9 for loading FreePtr into, and X10 for loading the address of FreePtr into.
 // Returns: the address to the new node, passed in X0.
+// Register usage:
+//		X9 - FreePtr is loaded into here.
+//		X10 - the address of FreePtr is loaded into here.
 alloc:
 	// Load FreePtr into X0.
 	LDR		X0, FreePtr
@@ -176,8 +189,10 @@ alloc:
 
 // Deallocates the top node on the node buffer.
 // Inputs: nothing.
-// Uses: X9 for loading FreePtr into, and X10 for loading the address of FreePtr into.
 // Returns: nothing.
+// Register usage:
+//		X9 - FreePtr is loaded into here.
+//		X10 - the address of FreePtr is loaded into here.
 free:
 	// Free one node on the buffer by decrementing the FreePtr by NodeSize.
 	LDR		X9, FreePtr
