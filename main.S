@@ -13,38 +13,60 @@ ListNode:
 	// Pointer to the next free node.
 	FreePtr:	.quad	Nodes
 
+	// Output buffer.
+	.equ		OutputSize, 100
+	Output:		.skip	OutputSize * 2
+
 	.text
 	.global 	main
 	.arch 		armv8-a+simd
 	.type 		main, %function
 	.type		insert, %function
 	.type		remove,	%function
+	.type		traverse, %function
 	.type		search, %function
 	.type		alloc, %function
 	.type		free, %function
 
 // Entrypoint.
 main:
-	MOV		X0, #5
+	// Insert into empty list.
+	MOV		X0, #26	// 0x1A
 	BL		insert
-	MOV		X0, #7
+	// Insert at end of list.
+	MOV		X0, #42	// 0x2A
 	BL		insert
-	MOV		X0, #6
+	// Insert at start of list.
+	MOV		X0, #16	// 0x10
 	BL		insert
-	MOV		X0, #3
+	// Insert in middle of list.
+	MOV		X0, #32	// 0x20
 	BL		insert
-	MOV		X0, #3
+	// Put contents into memory.
+	BL		traverse
+	ADR		X9, Output
+	ADR		X10, Nodes
+	// Attempt to remove non-existent value.
+	MOV		X0, #10	// 0x0A
 	BL		remove
-	MOV		X0, #7
-	BL		search
-	// Unit test
-	LDR		X9, Head
-	LDRH	W10, [X9, value]
-	LDR		X9, [X9, link]
-	LDRH	W11, [X9, value]
-	LDR		X9, [X9, link]
-	LDRH	W12, [X9, value]
-	BL		main		// End here.
+	// Remove the head of the list.
+	MOV		X0, #16	// 0x10
+	BL		remove
+	// Remove the end of list.
+	MOV		X0, #42	// 0x2A
+	BL		remove
+	// Remove a middle value from the list.
+	MOV		X0, #32 // 0x20
+	BL		remove
+	MOV		X0, #26	// 0x1A
+	BL		remove
+	// Attempt to remove from an empty list.
+	MOV		X0, #48 // 0x30
+	BL		remove
+	// Put contents to memory.
+	BL		traverse
+	ADR		X9, Output
+	B		end		// End here.
 
 // Inserts a value into the list, according to an ascending sort.
 // Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
@@ -172,10 +194,36 @@ remove:
 	MOV		X0, #1
 	RET
 
+// Traverses the list and stores the data from each node in subsequent halfwords in memory.
+// Inputs: nothing.
+// Returns: nothing.
+// Register usage:
+//		X9 - holds the current node pointer in the list traversal.
+//		X10 - holds the output buffer address.
+//		W11 - holds the value of the current node.
+traverse:
+	LDR		X9, Head	// Current node pointer.
+	ADR		X10, Output	// Output buffer address.
+	traverse_loop:
+	// Check if end of list has been reached.
+	CBZ		X9, traverse_end
+	// Get the value of the current node and store it.
+	LDRH	W11, [X9, value]
+	STRH	W11, [X10]
+	// Increment the output buffer address, the current node, and begin the next iteration.
+	ADD		X10, X10, #2
+	LDR		X9, [X9, link]
+	B		traverse_loop
+	traverse_end:
+	// Store 0 in memory.
+	MOV		W11, #0
+	STRH	W11, [X10]
+	RET
+
 // Searches for a value in the list, starting from the front.
 // Inputs: a 16-bit value to search for, passed in X0.
 // Returns: the 64-bit address to the node containing the value, or 0 if no match was found, passed in X0.
-// Regiser usage:
+// Register usage:
 //		X0 - holds the pointer to the current node; when this equals 0, or the value inside the node equals the search value, return.
 //		W19 - holds the value to search for.
 //		W20 - holds the value of the current node.
@@ -223,3 +271,6 @@ free:
 	ADR		X10, FreePtr
 	STR		X9, [X10]
 	RET
+
+end:
+	B		end
