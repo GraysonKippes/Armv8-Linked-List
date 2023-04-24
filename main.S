@@ -4,18 +4,19 @@ ListNode:
 	value:		.hword	0
 	link:		.quad	0
 	.equ		NodeSize, .-ListNode
+	.equ		ValSize, .-value
 
 	.data
 	// Head pointer.
 	Head:		.quad	0
 	// Node buffer.
-	Nodes:		.skip	100 * NodeSize
+	Nodes:		.skip	128 * NodeSize
 	// Pointer to the next free node.
 	FreePtr:	.quad	Nodes
 
 	// Output buffer.
-	.equ		OutputSize, 100
-	Output:		.skip	OutputSize * 2
+	.equ		OutputSize, 128
+	Output:		.skip	OutputSize * ValSize
 
 	.text
 	.global 	main
@@ -26,46 +27,32 @@ ListNode:
 	.type		traverse, %function
 	.type		search, %function
 	.type		alloc, %function
-	.type		free, %function
 
 // Entrypoint.
 main:
 	// Insert into empty list.
-	MOV		X0, #26	// 0x1A
+	MOV		X0, #1	// 0x1A
 	BL		insert
 	// Insert at end of list.
-	MOV		X0, #42	// 0x2A
+	MOV		X0, #2	// 0x2A
 	BL		insert
 	// Insert at start of list.
-	MOV		X0, #16	// 0x10
+	MOV		X0, #3	// 0x10
 	BL		insert
 	// Insert in middle of list.
-	MOV		X0, #32	// 0x20
+	MOV		X0, #4	// 0x20
 	BL		insert
 	// Put contents into memory.
 	BL		traverse
-	ADR		X9, Output
-	ADR		X10, Nodes
-	// Attempt to remove non-existent value.
-	MOV		X0, #10	// 0x0A
+	// Remove test.
+	MOV		X0, #3
 	BL		remove
-	// Remove the head of the list.
-	MOV		X0, #16	// 0x10
-	BL		remove
-	// Remove the end of list.
-	MOV		X0, #42	// 0x2A
-	BL		remove
-	// Remove a middle value from the list.
-	MOV		X0, #32 // 0x20
-	BL		remove
-	MOV		X0, #26	// 0x1A
-	BL		remove
-	// Attempt to remove from an empty list.
-	MOV		X0, #48 // 0x30
-	BL		remove
+	MOV		X0, #5
+	BL		insert
 	// Put contents to memory.
 	BL		traverse
 	ADR		X9, Output
+	ADR		X10, Nodes
 	B		end		// End here.
 
 // Inserts a value into the list, according to an ascending sort.
@@ -140,10 +127,6 @@ insert:
 //		W22 - holds the value of the current node.
 //		X23 - holds the link field of the node to be removed, which will be stored in the link field of the previous node.
 remove:
-	// Push LR onto the stack.
-	SUB		SP, SP, #16
-	STUR	X30, [SP]
-
 	// Store the current node pointer in X19, beginning with Head.
 	// Store the previous node pointer in X20.
 	LDR		X19, Head
@@ -185,11 +168,6 @@ remove:
 	ADR		X21, Head	// Load the address of the head pointer in X21, it's not needed for the Reset-Head flag anymore.
 	STR		X23, [X21]
 	remove_end:
-	// Free a node on the node buffer.
-	BL		free
-	// Pop LR off the stack.
-	LDUR	X30, [SP]
-	ADD		SP, SP, #16
 	// Return 1.
 	MOV		X0, #1
 	RET
@@ -253,21 +231,6 @@ alloc:
 	// Set X9 = FreePtr + NodeSize.
 	ADD		X9, X0, NodeSize
 	// Get the address of FreePtr and use it to store the incremented address into it.
-	ADR		X10, FreePtr
-	STR		X9, [X10]
-	RET
-
-// Deallocates the top node on the node buffer.
-// Inputs: nothing.
-// Returns: nothing.
-// Register usage:
-//		X9 - FreePtr is loaded into here.
-//		X10 - the address of FreePtr is loaded into here.
-free:
-	// Free one node on the buffer by decrementing the FreePtr by NodeSize.
-	LDR		X9, FreePtr
-	SUB		X9, X9, NodeSize
-	// Get the address of FreePtr and use it to store the decremented address into it.
 	ADR		X10, FreePtr
 	STR		X9, [X10]
 	RET
