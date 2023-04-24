@@ -31,16 +31,16 @@ ListNode:
 // Entrypoint.
 main:
 	// Insert into empty list.
-	MOV		X0, #1	// 0x1A
+	MOV		X0, #1
 	BL		insert
 	// Insert at end of list.
-	MOV		X0, #2	// 0x2A
+	MOV		X0, #2
 	BL		insert
 	// Insert at start of list.
-	MOV		X0, #3	// 0x10
+	MOV		X0, #3
 	BL		insert
 	// Insert in middle of list.
-	MOV		X0, #4	// 0x20
+	MOV		X0, #4
 	BL		insert
 	// Put contents into memory.
 	BL		traverse
@@ -59,11 +59,11 @@ main:
 // Inputs: a 16-bit data value (hword) passed in X0, to be inserted into the list.
 // Returns: a 64-bit address of the newly created node, passed in X0.
 // Register usage:
-//		W19 - stores the data value parameter.
-//		X20 - holds the current node in list traversal.
-//		X21 - holds the previous node in list traversal, or the address to the head node if inserting at the front of the list.
-//		X22 - reset-head flag, indicates whether the head pointer must be reset to the new node because it is being inserted at the front of the list.
-//		W23 - holds the value of the current node.
+//	W19 - stores the data value parameter.
+//	X20 - holds the current node in list traversal.
+//	X21 - holds the previous node in list traversal, or the address to the head node if inserting at the front of the list.
+//	X22 - reset-head flag, indicates whether the head pointer must be reset to the new node because it is being inserted at the front of the list.
+//	W23 - holds the value of the current node.
 insert:
 	// Push LR onto the stack.
 	SUB		SP, SP, #16
@@ -121,11 +121,11 @@ insert:
 // Inputs: a 16-bit data value (hword) passed in X0, to be removed from the list.
 // Returns: 1 if the value was found, 0 otherwise, passed in X0.
 // Register usage:
-//		X19 - holds the current node in list traversal.
-//		X20 - holds the previous node in list traversal.
-//		X21 - reset-head flag, indicates whether the head pointer must be reset because the front node is being removed.
-//		W22 - holds the value of the current node.
-//		X23 - holds the link field of the node to be removed, which will be stored in the link field of the previous node.
+//	X19 - holds the current node in list traversal.
+//	X20 - holds the previous node in list traversal.
+//	X21 - reset-head flag, indicates whether the head pointer must be reset because the front node is being removed.
+//	W22 - holds the value of the current node.
+//	X23 - holds the link field of the node to be removed, which will be stored in the link field of the previous node.
 remove:
 	// Store the current node pointer in X19, beginning with Head.
 	// Store the previous node pointer in X20.
@@ -176,9 +176,9 @@ remove:
 // Inputs: nothing.
 // Returns: nothing.
 // Register usage:
-//		X9 - holds the current node pointer in the list traversal.
-//		X10 - holds the output buffer address.
-//		W11 - holds the value of the current node.
+//	X9 - holds the current node pointer in the list traversal.
+//	X10 - holds the output buffer address.
+//	W11 - holds the value of the current node.
 traverse:
 	LDR		X9, Head	// Current node pointer.
 	ADR		X10, Output	// Output buffer address.
@@ -202,9 +202,9 @@ traverse:
 // Inputs: a 16-bit value to search for, passed in X0.
 // Returns: the 64-bit address to the node containing the value, or 0 if no match was found, passed in X0.
 // Register usage:
-//		X0 - holds the pointer to the current node; when this equals 0, or the value inside the node equals the search value, return.
-//		W19 - holds the value to search for.
-//		W20 - holds the value of the current node.
+//	X0 - holds the pointer to the current node; when this equals 0, or the value inside the node equals the search value, return.
+//	W19 - holds the value to search for.
+//	W20 - holds the value of the current node.
 search:
 	// Move the search value into W19, store the current node pointer in X0.
 	MOV		W19, W0
@@ -223,8 +223,8 @@ search:
 // Inputs: nothing.
 // Returns: the address to the new node, passed in X0.
 // Register usage:
-//		X9 - FreePtr is loaded into here.
-//		X10 - the address of FreePtr is loaded into here.
+//	X9 - FreePtr is loaded into here.
+//	X10 - the address of FreePtr is loaded into here.
 alloc:
 	// Load FreePtr into X0.
 	LDR		X0, FreePtr
@@ -235,5 +235,6 @@ alloc:
 	STR		X9, [X10]
 	RET
 
+// Ends the program.
 end:
 	B		end
