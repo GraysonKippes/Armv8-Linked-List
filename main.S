@@ -30,20 +30,21 @@ ListNode:
 
 // Entrypoint.
 main:
-	// Insert into empty list.
+	ADR		X11, FreePtr
+	ADR		X12, Head
+	// Insertion test.
 	MOV		X0, #1
 	BL		insert
-	// Insert at end of list.
 	MOV		X0, #2
 	BL		insert
-	// Insert at start of list.
 	MOV		X0, #3
 	BL		insert
-	// Insert in middle of list.
 	MOV		X0, #4
 	BL		insert
 	// Put contents into memory.
 	BL		traverse
+	ADR		X9, Output
+	ADR		X10, Nodes
 	// Remove test.
 	MOV		X0, #3
 	BL		remove
@@ -73,7 +74,8 @@ insert:
 	MOV		W19, W0
 	// X20 holds the current node to check.
 	// X21 holds the previous node.
-	LDR		X20, Head
+	ADR		X20, Head
+	LDR		X20, [X20]
 	// Insert-at-start flag: X22 is set to 1 if the new node will be the first node in the list.
 	MOV		X22, #1
 
@@ -129,7 +131,8 @@ insert:
 remove:
 	// Store the current node pointer in X19, beginning with Head.
 	// Store the previous node pointer in X20.
-	LDR		X19, Head
+	ADR		X19, Head
+	LDR		X19, [X19]
 	// Reset-Head flag (X21): starts at 1; if it is not 0 at the end of the loop, the Head node is being deleted and the Head pointer must be updated.
 	MOV		X21, #1
 
@@ -180,7 +183,8 @@ remove:
 //	X10 - holds the output buffer address.
 //	W11 - holds the value of the current node.
 traverse:
-	LDR		X9, Head	// Current node pointer.
+	ADR		X9, Head	// Current node pointer.
+	LDR		X9, [X9]
 	ADR		X10, Output	// Output buffer address.
 	traverse_loop:
 	// Check if end of list has been reached.
@@ -208,7 +212,8 @@ traverse:
 search:
 	// Move the search value into W19, store the current node pointer in X0.
 	MOV		W19, W0
-	LDR		X0, Head
+	ADR		X0, Head
+	LDR		X0, [X0]
 	search_loop:
 	CBZ		X0, search_end
 	LDR		W20, [X0, value]
@@ -227,7 +232,8 @@ search:
 //	X10 - the address of FreePtr is loaded into here.
 alloc:
 	// Load FreePtr into X0.
-	LDR		X0, FreePtr
+	ADR		X0, FreePtr
+	LDR		X0, [X0]
 	// Set X9 = FreePtr + NodeSize.
 	ADD		X9, X0, NodeSize
 	// Get the address of FreePtr and use it to store the incremented address into it.
